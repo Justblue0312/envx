@@ -1,3 +1,3 @@
-module github.com/Justblue0312/envx
+module github.com/justblue0312/envx
 
 go 1.24.4
