@@ -16,7 +16,7 @@ A powerful environment variable parsing library for Go applications with support
 ## Installation
 
 ```bash
-go get github.com/justblue/envx
+go get github.com/Justblue0312/envx
 ```
 
 ## Requirements
@@ -31,7 +31,7 @@ package main
 import (
     "fmt"
     "log"
-    "github.com/justblue/envx"
+    "github.com/Justblue0312/envx"
 )
 
 type Config struct {

@@ -17,7 +17,7 @@ Thank you for your interest in contributing to envx! This document provides guid
 
 ```bash
 # Clone the repository
-git clone https://github.com/justblue/envx.git
+git clone https://github.com/Justblue0312/envx.git
 cd envx
 
 # Install dependencies

@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/justblue/envx"
+	"github.com/Justblue0312/envx"
 )
 
 type CustomType struct {

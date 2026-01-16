@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/justblue/envx"
+	"github.com/Justblue0312/envx"
 )
 
 type DatabaseConfig struct {

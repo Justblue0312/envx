@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/justblue/envx"
+	"github.com/Justblue0312/envx"
 )
 
 type ServiceConfig struct {
