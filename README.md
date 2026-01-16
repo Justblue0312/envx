@@ -19,6 +19,10 @@ A powerful environment variable parsing library for Go applications with support
 go get github.com/envx/envx
 ```
 
+## Requirements
+
+- Go 1.21 or later
+
 ## Quick Start
 
 ```go
@@ -111,18 +115,18 @@ envx automatically handles platform differences:
 
 ## API Reference
 
-### `Process(prefix string, spec interface{}) error`
+##### `Process(prefix string, spec interface{}) error`
 
 Populates the specified struct with environment variables.
 
 - `prefix`: Optional prefix for environment variables
 - `spec`: Pointer to struct to populate
 
-### `MustProcess(prefix string, spec interface{})`
+##### `MustProcess(prefix string, spec interface{})`
 
 Same as `Process` but panics on error.
 
-### `CheckDisallowed(prefix string, spec interface{}) error`
+#### `CheckDisallowed(prefix string, spec interface{}) error`
 
 Checks for unknown environment variables with the given prefix.
 
@@ -142,10 +146,53 @@ Benchmark results on modern hardware:
 BenchmarkProcess-4   	  304969	      3996 ns/op
 ```
 
+## Release Process
+
+envx follows semantic versioning and uses automated releases:
+
+### Versioning
+
+- **Major (X.0.0)**: Breaking changes
+- **Minor (0.Y.0)**: New features (backward compatible)
+- **Patch (0.0.Z)**: Bug fixes (backward compatible)
+
+### Creating a Release
+
+```bash
+# Update version in go.mod (if needed)
+# Commit your changes
+git add .
+git commit -m "Prepare release v1.0.0"
+
+# Create and push tag
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+GitHub Actions will automatically:
+- Run all tests
+- Build binaries for multiple platforms
+- Create a GitHub release
+- Generate checksums
+
+### Development Versions
+
+For development builds:
+
+```bash
+make release
+```
+
+This creates snapshot binaries in the `dist/` directory.
+
 ## License
 
 MIT License - see LICENSE file for details.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Security
+
+For security issues, please see [SECURITY.md](SECURITY.md) for reporting procedures.

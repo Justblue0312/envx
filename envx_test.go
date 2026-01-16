@@ -192,8 +192,14 @@ func TestProcess(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			for k, v := range tt.env {
-				os.Setenv(k, v)
-				defer os.Unsetenv(k)
+				if err := os.Setenv(k, v); err != nil {
+					t.Fatalf("Failed to set env var %s: %v", k, err)
+				}
+				defer func(k string) {
+					if err := os.Unsetenv(k); err != nil {
+						t.Logf("Failed to unset env var %s: %v", k, err)
+					}
+				}(k)
 			}
 
 			err := Process(tt.prefix, tt.spec)
@@ -232,8 +238,14 @@ func TestNestedStructs(t *testing.T) {
 	}
 
 	for k, v := range env {
-		os.Setenv(k, v)
-		defer os.Unsetenv(k)
+		if err := os.Setenv(k, v); err != nil {
+			t.Fatalf("Failed to set env var %s: %v", k, err)
+		}
+		defer func(k string) {
+			if err := os.Unsetenv(k); err != nil {
+				t.Logf("Failed to unset env var %s: %v", k, err)
+			}
+		}(k)
 	}
 
 	config := &NestedConfig{}
@@ -267,8 +279,14 @@ func TestNestedStructs(t *testing.T) {
 }
 
 func TestMustProcess(t *testing.T) {
-	os.Setenv("TEST_STRING", "hello")
-	defer os.Unsetenv("TEST_STRING")
+	if err := os.Setenv("TEST_STRING", "hello"); err != nil {
+		t.Fatalf("Failed to set env var: %v", err)
+	}
+	defer func() {
+		if err := os.Unsetenv("TEST_STRING"); err != nil {
+			t.Logf("Failed to unset env var: %v", err)
+		}
+	}()
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -296,10 +314,22 @@ func TestMustProcessPanic(t *testing.T) {
 }
 
 func TestCheckDisallowed(t *testing.T) {
-	os.Setenv("TEST_STRING", "hello")
-	os.Setenv("UNKNOWN_VAR", "value")
-	defer os.Unsetenv("TEST_STRING")
-	defer os.Unsetenv("UNKNOWN_VAR")
+	if err := os.Setenv("TEST_STRING", "hello"); err != nil {
+		t.Fatalf("Failed to set env var: %v", err)
+	}
+	if err := os.Setenv("UNKNOWN_VAR", "value"); err != nil {
+		t.Fatalf("Failed to set env var: %v", err)
+	}
+	defer func() {
+		if err := os.Unsetenv("TEST_STRING"); err != nil {
+			t.Logf("Failed to unset env var: %v", err)
+		}
+	}()
+	defer func() {
+		if err := os.Unsetenv("UNKNOWN_VAR"); err != nil {
+			t.Logf("Failed to unset env var: %v", err)
+		}
+	}()
 
 	config := &TestConfig{}
 	err := CheckDisallowed("TEST", config)
@@ -458,19 +488,45 @@ func compareNestedConfigs(a, b *NestedConfig) bool {
 }
 
 func BenchmarkProcess(b *testing.B) {
-	os.Setenv("TEST_STRING", "benchmark")
-	os.Setenv("TEST_INT", "42")
-	os.Setenv("TEST_BOOL", "true")
-	os.Setenv("TEST_REQUIRED", "value")
-	defer os.Unsetenv("TEST_STRING")
-	defer os.Unsetenv("TEST_INT")
-	defer os.Unsetenv("TEST_BOOL")
-	defer os.Unsetenv("TEST_REQUIRED")
+	if err := os.Setenv("TEST_STRING", "benchmark"); err != nil {
+		b.Fatalf("Failed to set env var: %v", err)
+	}
+	if err := os.Setenv("TEST_INT", "42"); err != nil {
+		b.Fatalf("Failed to set env var: %v", err)
+	}
+	if err := os.Setenv("TEST_BOOL", "true"); err != nil {
+		b.Fatalf("Failed to set env var: %v", err)
+	}
+	if err := os.Setenv("TEST_REQUIRED", "value"); err != nil {
+		b.Fatalf("Failed to set env var: %v", err)
+	}
+	defer func() {
+		if err := os.Unsetenv("TEST_STRING"); err != nil {
+			b.Logf("Failed to unset env var: %v", err)
+		}
+	}()
+	defer func() {
+		if err := os.Unsetenv("TEST_INT"); err != nil {
+			b.Logf("Failed to unset env var: %v", err)
+		}
+	}()
+	defer func() {
+		if err := os.Unsetenv("TEST_BOOL"); err != nil {
+			b.Logf("Failed to unset env var: %v", err)
+		}
+	}()
+	defer func() {
+		if err := os.Unsetenv("TEST_REQUIRED"); err != nil {
+			b.Logf("Failed to unset env var: %v", err)
+		}
+	}()
 
 	config := &TestConfig{}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Process("", config)
+		if err := Process("", config); err != nil {
+			b.Fatalf("Process failed: %v", err)
+		}
 	}
 }

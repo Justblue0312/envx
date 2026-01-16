@@ -16,9 +16,15 @@ type ServiceConfig struct {
 }
 
 func main() {
-	os.Setenv("APP_SERVICE_NAME", "my-service")
-	os.Setenv("APP_SERVICE_PORT", "8080")
-	os.Setenv("APP_DEBUG", "true")
+	if err := os.Setenv("APP_SERVICE_NAME", "my-service"); err != nil {
+		log.Fatalf("Failed to set env var: %v", err)
+	}
+	if err := os.Setenv("APP_SERVICE_PORT", "8080"); err != nil {
+		log.Fatalf("Failed to set env var: %v", err)
+	}
+	if err := os.Setenv("APP_DEBUG", "true"); err != nil {
+		log.Fatalf("Failed to set env var: %v", err)
+	}
 
 	config := &ServiceConfig{}
 
