@@ -1,0 +1,45 @@
+package main
+
+import (
+	"fmt"
+	"log"
+
+	"github.com/envx/envx"
+)
+
+type DatabaseConfig struct {
+	Host     string `envconfig:"HOST" nested:"true"`
+	Port     int    `envconfig:"PORT" nested:"true"`
+	Password string `envconfig:"PASSWORD" nested:"true"`
+}
+
+type ServerConfig struct {
+	Host string `envconfig:"HOST" nested:"true"`
+	Port int    `envconfig:"PORT" nested:"true"`
+}
+
+type AppConfig struct {
+	Name     string         `envconfig:"APP_NAME"`
+	Debug    bool           `envconfig:"DEBUG"`
+	Database DatabaseConfig `nested:"true"`
+	Server   ServerConfig   `nested:"true"`
+}
+
+func main() {
+	config := &AppConfig{}
+
+	if err := envx.Process("", config); err != nil {
+		log.Fatalf("Failed to process config: %v", err)
+	}
+
+	fmt.Printf("App Config:\n")
+	fmt.Printf("  Name: %s\n", config.Name)
+	fmt.Printf("  Debug: %v\n", config.Debug)
+	fmt.Printf("  Database:\n")
+	fmt.Printf("    Host: %s\n", config.Database.Host)
+	fmt.Printf("    Port: %d\n", config.Database.Port)
+	fmt.Printf("    Password: %s\n", config.Database.Password)
+	fmt.Printf("  Server:\n")
+	fmt.Printf("    Host: %s\n", config.Server.Host)
+	fmt.Printf("    Port: %d\n", config.Server.Port)
+}
