@@ -40,14 +40,19 @@ security:
 # Building
 clean:
 	rm -f coverage.out coverage.html
+	rm -rf bin/
 	rm -rf dist/
 
 build:
 	@mkdir -p bin
-	go build -o bin/envx ./...
+	go build -o bin/envx ./cmd/envx
+
+build-lib:
+	go build ./...
 
 install:
-	go install ./...
+	go install ./cmd/envx
+	go install .
 
 # Release (requires goreleaser)
 release:
