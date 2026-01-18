@@ -1,4 +1,4 @@
-.PHONY: help test test-race test-coverage benchmark lint clean build install release
+.PHONY: help test test-race test-coverage benchmark lint clean build install release tag
 
 # Default target
 help:
@@ -12,6 +12,7 @@ help:
 	@echo "  build         - Build the package"
 	@echo "  install       - Install the package"
 	@echo "  release       - Run goreleaser (for releases only)"
+	@echo "  tag           - Create and push an annotated git tag (usage: make tag TAG=v1.2.3)"
 
 # Testing
 test:
@@ -58,6 +59,14 @@ install:
 release:
 	@which goreleaser > /dev/null || (echo "Installing goreleaser..." && go install github.com/goreleaser/goreleaser@latest)
 	goreleaser release --snapshot --clean
+
+# Create and push an annotated git tag
+tag:
+	ifndef TAG
+		$(error TAG is not set. Usage: make tag TAG=v1.2.3)
+	endif
+	git tag -a $(TAG) -m "Release $(TAG)"
+	git push origin $(TAG)
 
 # Development setup
 setup:
