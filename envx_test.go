@@ -8,24 +8,24 @@ import (
 )
 
 type TestConfig struct {
-	StringField   string `envconfig:"TEST_STRING"`
-	IntField      int    `envconfig:"TEST_INT"`
-	BoolField     bool   `envconfig:"TEST_BOOL"`
-	RequiredField string `envconfig:"TEST_REQUIRED"`
-	DefaultField  string `envconfig:"TEST_DEFAULT" default:"default_value"`
-	IgnoredField  string `envconfig:"TEST_IGNORED" ignored:"true"`
+	StringField   string `envx:"TEST_STRING"`
+	IntField      int    `envx:"TEST_INT"`
+	BoolField     bool   `envx:"TEST_BOOL"`
+	RequiredField string `envx:"TEST_REQUIRED"`
+	DefaultField  string `envx:"TEST_DEFAULT" default:"default_value"`
+	IgnoredField  string `envx:"TEST_IGNORED" ignored:"true"`
 }
 
 type NestedConfig struct {
 	Database struct {
-		Host     string `envconfig:"DB_HOST" nested:"true"`
-		Port     int    `envconfig:"DB_PORT" nested:"true"`
-		Password string `envconfig:"DB_PASSWORD" nested:"true"`
+		Host     string `envx:"DB_HOST" nested:"true"`
+		Port     int    `envx:"DB_PORT" nested:"true"`
+		Password string `envx:"DB_PASSWORD" nested:"true"`
 	} `nested:"true"`
 
 	Server struct {
-		Host string `envconfig:"SERVER_HOST" nested:"true"`
-		Port int    `envconfig:"SERVER_PORT" nested:"true"`
+		Host string `envx:"SERVER_HOST" nested:"true"`
+		Port int    `envx:"SERVER_PORT" nested:"true"`
 	} `nested:"true"`
 }
 
@@ -79,9 +79,9 @@ func TestProcess(t *testing.T) {
 	tests := []struct {
 		name     string
 		env      map[string]string
-		spec     interface{}
+		spec     any
 		prefix   string
-		expected interface{}
+		expected any
 		wantErr  bool
 		errType  error
 	}{
@@ -256,17 +256,17 @@ func TestNestedStructs(t *testing.T) {
 
 	expected := &NestedConfig{
 		Database: struct {
-			Host     string `envconfig:"DB_HOST" nested:"true"`
-			Port     int    `envconfig:"DB_PORT" nested:"true"`
-			Password string `envconfig:"DB_PASSWORD" nested:"true"`
+			Host     string `envx:"DB_HOST" nested:"true"`
+			Port     int    `envx:"DB_PORT" nested:"true"`
+			Password string `envx:"DB_PASSWORD" nested:"true"`
 		}{
 			Host:     "localhost",
 			Port:     5432,
 			Password: "secret",
 		},
 		Server: struct {
-			Host string `envconfig:"SERVER_HOST" nested:"true"`
-			Port int    `envconfig:"SERVER_PORT" nested:"true"`
+			Host string `envx:"SERVER_HOST" nested:"true"`
+			Port int    `envx:"SERVER_PORT" nested:"true"`
 		}{
 			Host: "0.0.0.0",
 			Port: 8080,
@@ -341,7 +341,7 @@ func TestCheckDisallowed(t *testing.T) {
 func TestInvalidSpecification(t *testing.T) {
 	tests := []struct {
 		name string
-		spec interface{}
+		spec any
 	}{
 		{"not a pointer", TestConfig{}},
 		{"nil pointer", (*TestConfig)(nil)},
@@ -427,7 +427,7 @@ func TestIsTrue(t *testing.T) {
 	}
 }
 
-func compareConfigs(a, b interface{}) bool {
+func compareConfigs(a, b any) bool {
 	switch x := a.(type) {
 	case *TestConfig:
 		y, ok := b.(*TestConfig)

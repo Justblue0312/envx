@@ -45,7 +45,7 @@ type varInfo struct {
 	Tags  reflect.StructTag
 }
 
-func gatherInfo(prefix string, spec interface{}) ([]varInfo, error) {
+func gatherInfo(prefix string, spec any) ([]varInfo, error) {
 	s := reflect.ValueOf(spec)
 
 	if s.Kind() != reflect.Ptr || s.Elem().Kind() != reflect.Struct {
@@ -77,7 +77,7 @@ func gatherInfo(prefix string, spec interface{}) ([]varInfo, error) {
 			Name:  fieldType.Name,
 			Field: field,
 			Tags:  fieldType.Tag,
-			Alt:   strings.ToUpper(fieldType.Tag.Get("envconfig")),
+			Alt:   strings.ToUpper(fieldType.Tag.Get("envx")),
 		}
 
 		info.Key = info.Name
@@ -140,7 +140,7 @@ func toSnakeCase(s string) string {
 	return strings.Join(result, "_")
 }
 
-func CheckDisallowed(prefix string, spec interface{}) error {
+func CheckDisallowed(prefix string, spec any) error {
 	infos, err := gatherInfo(prefix, spec)
 	if err != nil {
 		return err
@@ -168,7 +168,7 @@ func CheckDisallowed(prefix string, spec interface{}) error {
 	return nil
 }
 
-func Process(prefix string, spec interface{}) error {
+func Process(prefix string, spec any) error {
 	infos, err := gatherInfo(prefix, spec)
 	if err != nil {
 		return err
@@ -219,7 +219,7 @@ func Process(prefix string, spec interface{}) error {
 	return nil
 }
 
-func MustProcess(prefix string, spec interface{}) {
+func MustProcess(prefix string, spec any) {
 	if err := Process(prefix, spec); err != nil {
 		panic(err)
 	}
@@ -334,7 +334,7 @@ func processField(value string, field reflect.Value) error {
 	return nil
 }
 
-func interfaceFrom(field reflect.Value, fn func(interface{}, *bool)) {
+func interfaceFrom(field reflect.Value, fn func(any, *bool)) {
 	if !field.CanInterface() {
 		return
 	}
@@ -346,22 +346,22 @@ func interfaceFrom(field reflect.Value, fn func(interface{}, *bool)) {
 }
 
 func decoderFrom(field reflect.Value) (d Decoder) {
-	interfaceFrom(field, func(v interface{}, ok *bool) { d, *ok = v.(Decoder) })
+	interfaceFrom(field, func(v any, ok *bool) { d, *ok = v.(Decoder) })
 	return d
 }
 
 func setterFrom(field reflect.Value) (s Setter) {
-	interfaceFrom(field, func(v interface{}, ok *bool) { s, *ok = v.(Setter) })
+	interfaceFrom(field, func(v any, ok *bool) { s, *ok = v.(Setter) })
 	return s
 }
 
 func textUnmarshaler(field reflect.Value) (t encoding.TextUnmarshaler) {
-	interfaceFrom(field, func(v interface{}, ok *bool) { t, *ok = v.(encoding.TextUnmarshaler) })
+	interfaceFrom(field, func(v any, ok *bool) { t, *ok = v.(encoding.TextUnmarshaler) })
 	return t
 }
 
 func binaryUnmarshaler(field reflect.Value) (b encoding.BinaryUnmarshaler) {
-	interfaceFrom(field, func(v interface{}, ok *bool) { b, *ok = v.(encoding.BinaryUnmarshaler) })
+	interfaceFrom(field, func(v any, ok *bool) { b, *ok = v.(encoding.BinaryUnmarshaler) })
 	return b
 }
 

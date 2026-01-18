@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/Justblue0312/envx"
+	"github.com/justblue0312/envx"
 )
 
 type CustomType struct {
@@ -18,21 +18,21 @@ func (c *CustomType) Decode(value string) error {
 }
 
 type AdvancedConfig struct {
-	StringField   string        `envconfig:"STRING_FIELD"`
-	IntField      int           `envconfig:"INT_FIELD"`
-	BoolField     bool          `envconfig:"BOOL_FIELD"`
-	FloatField    float64       `envconfig:"FLOAT_FIELD"`
-	DurationField time.Duration `envconfig:"DURATION_FIELD"`
+	StringField   string        `envx:"STRING_FIELD"`
+	IntField      int           `envx:"INT_FIELD"`
+	BoolField     bool          `envx:"BOOL_FIELD"`
+	FloatField    float64       `envx:"FLOAT_FIELD"`
+	DurationField time.Duration `envx:"DURATION_FIELD"`
 
-	SliceOfStrings []string          `envconfig:"SLICE_STRINGS"`
-	SliceOfInts    []int             `envconfig:"SLICE_INTS"`
-	MapField       map[string]string `envconfig:"MAP_FIELD"`
+	SliceOfStrings []string          `envx:"SLICE_STRINGS"`
+	SliceOfInts    []int             `envx:"SLICE_INTS"`
+	MapField       map[string]string `envx:"MAP_FIELD"`
 
-	CustomField CustomType `envconfig:"CUSTOM_FIELD"`
-	PtrField    *string    `envconfig:"PTR_FIELD"`
+	CustomField CustomType `envx:"CUSTOM_FIELD"`
+	PtrField    *string    `envx:"PTR_FIELD"`
 
-	DefaultField string `envconfig:"DEFAULT_FIELD" default:"default_value"`
-	IgnoredField string `envconfig:"IGNORED_FIELD" ignored:"true"`
+	DefaultField string `envx:"DEFAULT_FIELD" default:"default_value"`
+	IgnoredField string `envx:"IGNORED_FIELD" ignored:"true"`
 }
 
 func main() {

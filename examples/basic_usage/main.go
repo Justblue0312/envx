@@ -5,14 +5,14 @@ import (
 	"log"
 	"os"
 
-	"github.com/Justblue0312/envx"
+	"github.com/justblue0312/envx"
 )
 
 type ServiceConfig struct {
-	Name     string `envconfig:"SERVICE_NAME"`
-	Port     int    `envconfig:"SERVICE_PORT"`
-	Debug    bool   `envconfig:"DEBUG" default:"false"`
-	LogLevel string `envconfig:"LOG_LEVEL" default:"info"`
+	Name     string `envx:"SERVICE_NAME"`
+	Port     int    `envx:"SERVICE_PORT"`
+	Debug    bool   `envx:"DEBUG" default:"false"`
+	LogLevel string `envx:"LOG_LEVEL" default:"info"`
 }
 
 func main() {

@@ -4,23 +4,23 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Justblue0312/envx"
+	"github.com/justblue0312/envx"
 )
 
 type DatabaseConfig struct {
-	Host     string `envconfig:"HOST" nested:"true"`
-	Port     int    `envconfig:"PORT" nested:"true"`
-	Password string `envconfig:"PASSWORD" nested:"true"`
+	Host     string `envx:"HOST" nested:"true"`
+	Port     int    `envx:"PORT" nested:"true"`
+	Password string `envx:"PASSWORD" nested:"true"`
 }
 
 type ServerConfig struct {
-	Host string `envconfig:"HOST" nested:"true"`
-	Port int    `envconfig:"PORT" nested:"true"`
+	Host string `envx:"HOST" nested:"true"`
+	Port int    `envx:"PORT" nested:"true"`
 }
 
 type AppConfig struct {
-	Name     string         `envconfig:"APP_NAME"`
-	Debug    bool           `envconfig:"DEBUG"`
+	Name     string         `envx:"APP_NAME"`
+	Debug    bool           `envx:"DEBUG"`
 	Database DatabaseConfig `nested:"true"`
 	Server   ServerConfig   `nested:"true"`
 }

@@ -35,10 +35,10 @@ import (
 )
 
 type Config struct {
-    Name    string `envconfig:"APP_NAME"`
-    Port    int    `envconfig:"APP_PORT"`
-    Debug   bool   `envconfig:"DEBUG" default:"false"`
-    Timeout string `envconfig:"TIMEOUT" default:"30s"`
+    Name    string `envx:"APP_NAME"`
+    Port    int    `envx:"APP_PORT"`
+    Debug   bool   `envx:"DEBUG" default:"false"`
+    Timeout string `envx:"TIMEOUT" default:"30s"`
 }
 
 func main() {
@@ -58,13 +58,13 @@ Use the `nested:"true"` tag to enable double underscore separation for nested st
 
 ```go
 type DatabaseConfig struct {
-    Host     string `envconfig:"HOST" nested:"true"`
-    Port     int    `envconfig:"PORT" nested:"true"`
-    Password string `envconfig:"PASSWORD" nested:"true"`
+    Host     string `envx:"HOST" nested:"true"`
+    Port     int    `envx:"PORT" nested:"true"`
+    Password string `envx:"PASSWORD" nested:"true"`
 }
 
 type Config struct {
-    AppName  string         `envconfig:"APP_NAME"`
+    AppName  string         `envx:"APP_NAME"`
     Database DatabaseConfig `nested:"true"`
 }
 ```
@@ -99,7 +99,7 @@ func (c *CustomType) Decode(value string) error {
 
 ## Struct Tags
 
-- `envconfig:"VAR_NAME"` - Custom environment variable name
+- `envx:"VAR_NAME"` - Custom environment variable name
 - `default:"value"` - Default value if environment variable is not set
 - `required:"true"` - Mark field as required (error if not set)
 - `nested:"true"` - Enable nested struct with double underscore separator
@@ -115,18 +115,18 @@ envx automatically handles platform differences:
 
 ## API Reference
 
-##### `Process(prefix string, spec interface{}) error`
+##### `Process(prefix string, spec any) error`
 
 Populates the specified struct with environment variables.
 
 - `prefix`: Optional prefix for environment variables
 - `spec`: Pointer to struct to populate
 
-##### `MustProcess(prefix string, spec interface{})`
+##### `MustProcess(prefix string, spec any)`
 
 Same as `Process` but panics on error.
 
-#### `CheckDisallowed(prefix string, spec interface{}) error`
+#### `CheckDisallowed(prefix string, spec any) error`
 
 Checks for unknown environment variables with the given prefix.
 
