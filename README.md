@@ -245,7 +245,7 @@ Populates the specified struct with environment variables.
 
 Same as `Process` but panics on error.
 
-#### `CheckDisallowed(prefix string, spec any) error`
+##### `CheckDisallowed(prefix string, spec any) error`
 
 Checks for unknown environment variables with the given prefix.
 
