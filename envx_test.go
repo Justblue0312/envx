@@ -249,11 +249,11 @@ func TestProcess(t *testing.T) {
 
 func TestNestedStructs(t *testing.T) {
 	env := map[string]string{
-		"DATABASE__DB_HOST":     "localhost",
-		"DATABASE__DB_PORT":     "5432",
-		"DATABASE__DB_PASSWORD": "secret",
-		"SERVER__SERVER_HOST":   "0.0.0.0",
-		"SERVER__SERVER_PORT":   "8080",
+		"DATABASE_DB_HOST":     "localhost",
+		"DATABASE_DB_PORT":     "5432",
+		"DATABASE_DB_PASSWORD": "secret",
+		"SERVER_SERVER_HOST":   "0.0.0.0",
+		"SERVER_SERVER_PORT":   "8080",
 	}
 
 	for k, v := range env {
@@ -292,8 +292,149 @@ func TestNestedStructs(t *testing.T) {
 		},
 	}
 
-	if !compareNestedConfigs(config, expected) {
+	if !compareNestedConfigsWithoutTags(config, expected) {
 		t.Errorf("Process() = %+v, want %+v", config, expected)
+	}
+}
+
+func TestNestedStructsWithPrefix(t *testing.T) {
+	tests := []struct {
+		name     string
+		prefix   string
+		env      map[string]string
+		spec     any
+		expected any
+		wantErr  bool
+	}{
+		{
+			name:   "nested struct with prefix",
+			prefix: "APP",
+			env: map[string]string{
+				"APP_DATABASE_DB_HOST":     "localhost",
+				"APP_DATABASE_DB_PORT":     "5432",
+				"APP_DATABASE_DB_PASSWORD": "secret",
+				"APP_SERVER_SERVER_HOST":   "0.0.0.0",
+				"APP_SERVER_SERVER_PORT":   "8080",
+			},
+			spec: &NestedConfig{},
+			expected: &NestedConfig{
+				Database: struct {
+					Host     string `envx:"DB_HOST" nested:"true"`
+					Port     int    `envx:"DB_PORT" nested:"true"`
+					Password string `envx:"DB_PASSWORD" nested:"true"`
+				}{
+					Host:     "localhost",
+					Port:     5432,
+					Password: "secret",
+				},
+				Server: struct {
+					Host string `envx:"SERVER_HOST" nested:"true"`
+					Port int    `envx:"SERVER_PORT" nested:"true"`
+				}{
+					Host: "0.0.0.0",
+					Port: 8080,
+				},
+			},
+		},
+		{
+			name:   "nested struct with custom separator",
+			prefix: "MYAPP",
+			env: map[string]string{
+				"MYAPP_DATABASE_DB_HOST":     "db.example.com",
+				"MYAPP_DATABASE_DB_PORT":     "3306",
+				"MYAPP_DATABASE_DB_PASSWORD": "mypass",
+				"MYAPP_SERVER_SERVER_HOST":   "api.example.com",
+				"MYAPP_SERVER_SERVER_PORT":   "9000",
+			},
+			spec: &NestedConfig{},
+			expected: &NestedConfig{
+				Database: struct {
+					Host     string `envx:"DB_HOST" nested:"true"`
+					Port     int    `envx:"DB_PORT" nested:"true"`
+					Password string `envx:"DB_PASSWORD" nested:"true"`
+				}{
+					Host:     "db.example.com",
+					Port:     3306,
+					Password: "mypass",
+				},
+				Server: struct {
+					Host string `envx:"SERVER_HOST" nested:"true"`
+					Port int    `envx:"SERVER_PORT" nested:"true"`
+				}{
+					Host: "api.example.com",
+					Port: 9000,
+				},
+			},
+		},
+		{
+			name:   "mixed nested and regular fields with prefix",
+			prefix: "APP",
+			env: map[string]string{
+				"APP_TEST_STRING":  "prefixed_string",
+				"APP_TEST_INT":     "123",
+				"APP_TEST_BOOL":    "true",
+				"APP_NESTED_FIELD": "nested_value",
+			},
+			spec: &struct {
+				StringField string `envx:"TEST_STRING"`
+				IntField    int    `envx:"TEST_INT"`
+				BoolField   bool   `envx:"TEST_BOOL"`
+				Nested      struct {
+					Field string `envx:"FIELD" nested:"true"`
+				} `nested:"true"`
+			}{},
+			expected: &struct {
+				StringField string `envx:"TEST_STRING"`
+				IntField    int    `envx:"TEST_INT"`
+				BoolField   bool   `envx:"TEST_BOOL"`
+				Nested      struct {
+					Field string `envx:"FIELD" nested:"true"`
+				} `nested:"true"`
+			}{
+				StringField: "prefixed_string",
+				IntField:    123,
+				BoolField:   true,
+				Nested: struct {
+					Field string `envx:"FIELD" nested:"true"`
+				}{
+					Field: "nested_value",
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for k, v := range tt.env {
+				if err := os.Setenv(k, v); err != nil {
+					t.Fatalf("Failed to set env var %s: %v", k, err)
+				}
+				defer func(k string) {
+					if err := os.Unsetenv(k); err != nil {
+						t.Logf("Failed to unset env var %s: %v", k, err)
+					}
+				}(k)
+			}
+
+			err := Process(tt.prefix, tt.spec)
+
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("Process() expected error, got nil")
+					return
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Process() unexpected error: %v", err)
+				return
+			}
+
+			if !compareNestedWithPrefixConfigs(tt.spec, tt.expected) {
+				t.Errorf("Process() = %+v, want %+v", tt.spec, tt.expected)
+			}
+		})
 	}
 }
 
@@ -506,6 +647,53 @@ func compareNestedConfigs(a, b *NestedConfig) bool {
 		a.Server.Port == b.Server.Port
 }
 
+func compareNestedConfigsWithoutTags(a, b *NestedConfig) bool {
+	return a.Database.Host == b.Database.Host &&
+		a.Database.Port == b.Database.Port &&
+		a.Database.Password == b.Database.Password &&
+		a.Server.Host == b.Server.Host &&
+		a.Server.Port == b.Server.Port
+}
+
+func compareNestedWithPrefixConfigs(a, b any) bool {
+	switch x := a.(type) {
+	case *NestedConfig:
+		y, ok := b.(*NestedConfig)
+		if !ok {
+			return false
+		}
+		return x.Database.Host == y.Database.Host &&
+			x.Database.Port == y.Database.Port &&
+			x.Database.Password == y.Database.Password &&
+			x.Server.Host == y.Server.Host &&
+			x.Server.Port == y.Server.Port
+	case *struct {
+		StringField string `envx:"TEST_STRING"`
+		IntField    int    `envx:"TEST_INT"`
+		BoolField   bool   `envx:"TEST_BOOL"`
+		Nested      struct {
+			Field string `envx:"FIELD" nested:"true"`
+		} `nested:"true"`
+	}:
+		y, ok := b.(*struct {
+			StringField string `envx:"TEST_STRING"`
+			IntField    int    `envx:"TEST_INT"`
+			BoolField   bool   `envx:"TEST_BOOL"`
+			Nested      struct {
+				Field string `envx:"FIELD" nested:"true"`
+			} `nested:"true"`
+		})
+		if !ok {
+			return false
+		}
+		return x.StringField == y.StringField &&
+			x.IntField == y.IntField &&
+			x.BoolField == y.BoolField &&
+			x.Nested.Field == y.Nested.Field
+	}
+	return false
+}
+
 func BenchmarkProcess(b *testing.B) {
 	if err := os.Setenv("TEST_STRING", "benchmark"); err != nil {
 		b.Fatalf("Failed to set env var: %v", err)
@@ -542,8 +730,7 @@ func BenchmarkProcess(b *testing.B) {
 
 	config := &TestConfig{}
 
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		if err := Process("", config); err != nil {
 			b.Fatalf("Process failed: %v", err)
 		}

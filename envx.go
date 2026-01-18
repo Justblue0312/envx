@@ -49,7 +49,7 @@ type varInfo struct {
 func gatherInfo(prefix string, spec any) ([]varInfo, error) {
 	s := reflect.ValueOf(spec)
 
-	if s.Kind() != reflect.Ptr || s.Elem().Kind() != reflect.Struct {
+	if s.Kind() != reflect.Pointer || s.Elem().Kind() != reflect.Struct {
 		return nil, ErrInvalidSpecification
 	}
 	s = s.Elem()
@@ -64,7 +64,7 @@ func gatherInfo(prefix string, spec any) ([]varInfo, error) {
 			continue
 		}
 
-		for field.Kind() == reflect.Ptr {
+		for field.Kind() == reflect.Pointer {
 			if field.IsNil() {
 				if field.Type().Elem().Kind() != reflect.Struct {
 					break
@@ -91,10 +91,8 @@ func gatherInfo(prefix string, spec any) ([]varInfo, error) {
 			info.Key = info.Alt
 		}
 
+		// For nested structs, always use "_" separator (not "__")
 		separator := "_"
-		if isTrue(fieldType.Tag.Get("nested")) {
-			separator = "__"
-		}
 
 		if prefix != "" {
 			info.Key = fmt.Sprintf("%s%s%s", prefix, separator, info.Key)
@@ -247,7 +245,7 @@ func processField(value string, field reflect.Value) error {
 		return b.UnmarshalBinary([]byte(value))
 	}
 
-	if typ.Kind() == reflect.Ptr {
+	if typ.Kind() == reflect.Pointer {
 		// Handle special case for *time.Location
 		if typ.Elem().PkgPath() == "time" && typ.Elem().Name() == "Location" {
 			if value == "" {
@@ -335,8 +333,8 @@ func processField(value string, field reflect.Value) error {
 	case reflect.Map:
 		mp := reflect.MakeMap(typ)
 		if strings.TrimSpace(value) != "" {
-			pairs := strings.Split(value, ",")
-			for _, pair := range pairs {
+			pairs := strings.SplitSeq(value, ",")
+			for pair := range pairs {
 				kvpair := strings.Split(pair, ":")
 				if len(kvpair) != 2 {
 					return fmt.Errorf("invalid map item: %q", pair)
