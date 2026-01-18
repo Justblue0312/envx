@@ -18,13 +18,13 @@ func lookupEnv(key string) (string, bool) {
 }
 
 func tryNestedKeys(key string) string {
-	if !strings.Contains(key, "__") {
+	if !strings.Contains(key, "_") {
 		return ""
 	}
 
-	parts := strings.Split(key, "__")
+	parts := strings.Split(key, "_")
 	for i := len(parts); i > 1; i-- {
-		testKey := strings.Join(parts[:i], "__")
+		testKey := strings.Join(parts[:i], "_")
 		if value := tryWindowsLookup(testKey); value != "" {
 			return value
 		}

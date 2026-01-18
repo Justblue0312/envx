@@ -2,6 +2,7 @@ package envx
 
 import (
 	"errors"
+	"net/url"
 	"os"
 	"testing"
 	"time"
@@ -71,6 +72,8 @@ type ComplexConfig struct {
 	IntSlice   []int
 	MapField   map[string]string
 	Duration   time.Duration
+	Location   *time.Location `envx:"LOCATION"`
+	URLField   *url.URL       `envx:"URLFIELD"`
 	PtrField   *string
 	NestedPtr  *TestConfig
 }
@@ -185,6 +188,22 @@ func TestProcess(t *testing.T) {
 			spec: &ComplexConfig{},
 			expected: &ComplexConfig{
 				PtrField: func() *string { s := "pointer"; return &s }(),
+			},
+		},
+		{
+			name: "location field",
+			env:  map[string]string{"LOCATION": "UTC"},
+			spec: &ComplexConfig{},
+			expected: &ComplexConfig{
+				Location: time.UTC,
+			},
+		},
+		{
+			name: "url field",
+			env:  map[string]string{"URLFIELD": "https://example.com/path"},
+			spec: &ComplexConfig{},
+			expected: &ComplexConfig{
+				URLField: func() *url.URL { u, _ := url.Parse("https://example.com/path"); return u }(),
 			},
 		},
 	}

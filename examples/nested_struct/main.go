@@ -8,14 +8,14 @@ import (
 )
 
 type DatabaseConfig struct {
-	Host     string `envx:"HOST" nested:"true"`
-	Port     int    `envx:"PORT" nested:"true"`
-	Password string `envx:"PASSWORD" nested:"true"`
+	Host     string `envx:"HOST"`
+	Port     int    `envx:"PORT"`
+	Password string `envx:"PASSWORD"`
 }
 
 type ServerConfig struct {
-	Host string `envx:"HOST" nested:"true"`
-	Port int    `envx:"PORT" nested:"true"`
+	Host string `envx:"HOST"`
+	Port int    `envx:"PORT"`
 }
 
 type AppConfig struct {

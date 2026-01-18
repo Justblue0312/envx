@@ -4,6 +4,7 @@ import (
 	"encoding"
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"reflect"
 	"regexp"
@@ -247,6 +248,31 @@ func processField(value string, field reflect.Value) error {
 	}
 
 	if typ.Kind() == reflect.Ptr {
+		// Handle special case for *time.Location
+		if typ.Elem().PkgPath() == "time" && typ.Elem().Name() == "Location" {
+			if value == "" {
+				return nil // Allow empty value for Location
+			}
+			loc, err := time.LoadLocation(value)
+			if err != nil {
+				return err
+			}
+			field.Set(reflect.ValueOf(loc))
+			return nil
+		}
+		// Handle special case for *url.URL
+		if typ.Elem().PkgPath() == "net/url" && typ.Elem().Name() == "URL" {
+			if value == "" {
+				return nil // Allow empty value for URL
+			}
+			u, err := url.Parse(value)
+			if err != nil {
+				return err
+			}
+			field.Set(reflect.ValueOf(u))
+			return nil
+		}
+		// Fall through to default pointer handling
 		typ = typ.Elem()
 		if field.IsNil() {
 			field.Set(reflect.New(typ))
