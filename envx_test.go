@@ -297,6 +297,50 @@ func TestNestedStructs(t *testing.T) {
 	}
 }
 
+func TestUserSpecificCase(t *testing.T) {
+	// Test the user's specific case
+	os.Setenv("FIN_APP_NAME", "myapp")
+	os.Setenv("FIN_DB_HOST", "localhost")
+	os.Setenv("FIN_DB_PORT", "5432")
+	os.Setenv("FIN_DB_PASSWORD", "secret")
+	defer func() {
+		os.Unsetenv("FIN_APP_NAME")
+		os.Unsetenv("FIN_DB_HOST")
+		os.Unsetenv("FIN_DB_PORT")
+		os.Unsetenv("FIN_DB_PASSWORD")
+	}()
+
+	type DatabaseConfig struct {
+		Host     string `envx:"HOST"`
+		Port     int    `envx:"PORT"`
+		Password string `envx:"PASSWORD"`
+	}
+
+	type Config struct {
+		AppName  string         `envx:"APP_NAME"`
+		Database DatabaseConfig `envx:"DB" nested:"true"`
+	}
+
+	config := &Config{}
+	err := Process("FIN", config)
+	if err != nil {
+		t.Fatalf("Process() unexpected error: %v", err)
+	}
+
+	if config.AppName != "myapp" {
+		t.Errorf("Expected AppName 'myapp', got '%s'", config.AppName)
+	}
+	if config.Database.Host != "localhost" {
+		t.Errorf("Expected Database.Host 'localhost', got '%s'", config.Database.Host)
+	}
+	if config.Database.Port != 5432 {
+		t.Errorf("Expected Database.Port 5432, got %d", config.Database.Port)
+	}
+	if config.Database.Password != "secret" {
+		t.Errorf("Expected Database.Password 'secret', got '%s'", config.Database.Password)
+	}
+}
+
 func TestNestedStructsWithPrefix(t *testing.T) {
 	tests := []struct {
 		name     string
